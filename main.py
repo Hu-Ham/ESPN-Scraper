@@ -23,6 +23,7 @@ for a in storyPageSoup.find_all('a', {'class': 'story-link'}):
     subpageSoup = BeautifulSoup(subpage.content, "html.parser")
     articleBody = subpageSoup.find('div', {'class': 'article-body'})
 
+    # Tokenize all words
     text_p = (''.join(s.findAll(text=True)) for s in articleBody.findAll('p'))
     c_p = Counter((x.rstrip(punctuation).lower() for y in text_p for x in y.split()))
 
