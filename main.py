@@ -75,12 +75,14 @@ print("Mean Words: " + str(statistics.mean(totalWords)))
 print("Median Words: " + str(statistics.median(totalWords)))
 
 ENGLISH_RE = re.compile(r'[a-z]+')
-STOP_WORDS = nltk.corpus.stopwords.words("english")
+stop_words = nltk.corpus.stopwords.words("english")
+stop_words.append('said') #Removal of the word "said", a common stop-word not in the stop word corpus
+
 
 nltk.download(['stopwords', 'punkt'])
 totalText = ' '.join(words)
-tokenized: list[str] = nltk.TweetTokenizer().tokenize(totalText)
-tokenizedNotStopWords = [w for w in tokenized if w.lower() not in nltk.corpus.stopwords.words("english") and ENGLISH_RE.match(w.lower())]
+tokenized = nltk.TweetTokenizer().tokenize(totalText)
+tokenizedNotStopWords = [w for w in tokenized if w.lower() not in stop_words and ENGLISH_RE.match(w.lower())]
 fd = nltk.FreqDist(tokenizedNotStopWords)
 most_common = fd.most_common(15)
 
