@@ -1,5 +1,10 @@
 #
 # Mini Project 1 - Lucius Latham, Hugh Hamilton
+# This code scrapes the text of the top 20 articles of the NFL section on ESPN.com,
+# beginning with the articles indexed under NFL, and advancing until twenty have been collated.
+# The text is subsequently analyzed for its mean and modal number of words, and Python data visualization
+# packages are used to graphically display the most common words used in all of the articles, excluding
+# "stop words". Some data cleaning extends the list of stop words from NLTK's default package.
 #
 
 import requests
@@ -14,8 +19,10 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
+#Arrays of the total number of words and of all words used, in all articles
 totalWords = []
 words = []
+#The set data structure allows links to be added without adding the same link twice, by a hashed reference.
 subpageLinks = set()
 noOfPages = 0
 
@@ -23,6 +30,8 @@ espnUrl = input("Enter the url (https://www.espn.com): ")
 if espnUrl[-1] == '/':
     espnUrl = espnUrl[:-1]
 
+#Method to traverse from the main URL to subpages, and to continue traversing until 20 unique articles
+#have been aggregated.
 def parseMainpage(link):
     global noOfPages, espnUrl
 
@@ -41,7 +50,8 @@ def parseMainpage(link):
         subpageLink = espnUrl + a['href']
         parseSubpage(subpageLink)
         noOfPages += 1
-
+#Method to add individual page links into the set data structure of all links, and to tokenize all article
+#content in order to count the total number of words and aggregate all words in the words[] array
 def parseSubpage(link):
     global words, totalWords, subpageLinks
 
@@ -70,10 +80,12 @@ for link in menuLinks:
     if noOfPages < 20:
         parseMainpage(espnUrl + link['href'])
 
+#Print basic data
 print("Number of Articles: " + str(noOfPages))
 print("Mean Words: " + str(statistics.mean(totalWords)))
 print("Median Words: " + str(statistics.median(totalWords)))
 
+#Use of the NLTK package to "clean" data by removing stop-words, and then assess most common remaining words
 ENGLISH_RE = re.compile(r'[a-z]+')
 stop_words = nltk.corpus.stopwords.words("english")
 stop_words.append('said') #Removal of the word "said", a common stop-word not in the stop word corpus
@@ -86,11 +98,13 @@ tokenizedNotStopWords = [w for w in tokenized if w.lower() not in stop_words and
 fd = nltk.FreqDist(tokenizedNotStopWords)
 most_common = fd.most_common(15)
 
+#Print out the results as a word cloud
 wordcloud = WordCloud(max_words=50, background_color="white").generate(' '.join(tokenizedNotStopWords))
 plt.imshow(wordcloud, interpolation='bilinear')
 plt.axis("off")
 plt.show()
 
+#Print out the results as a bar chart
 fig = go.Figure(data=[go.Bar(
     x=[i[0] for i in most_common],
     y=[i[1] for i in most_common],
