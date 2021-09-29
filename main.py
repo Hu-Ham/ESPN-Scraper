@@ -19,22 +19,26 @@ words = []
 subpageLinks = set()
 noOfPages = 0
 
+espnUrl = input("Enter the url (https://www.espn.com): ")
+if espnUrl[-1] == '/':
+    espnUrl = espnUrl[:-1]
+
 def parseMainpage(link):
-    global noOfPages
+    global noOfPages, espnUrl
 
     page = requests.get(link)
     soup = BeautifulSoup(page.content, "html.parser")
     headlinesDiv = soup.find('div', {'class': 'headlineStack'})
 
     # Follow top headline to get full list of top headlines.
-    link = "https://www.espn.com" + headlinesDiv.find('a', {'data-mptype': 'headline'})['href']
+    link = espnUrl + headlinesDiv.find('a', {'data-mptype': 'headline'})['href']
     storyPage = requests.get(link)
     storyPageSoup = BeautifulSoup(storyPage.content, "html.parser")
 
     for a in storyPageSoup.find_all('a', {'class': 'story-link'}):
         if noOfPages >= 20:
             break
-        subpageLink = "https://www.espn.com" + a['href']
+        subpageLink = espnUrl + a['href']
         parseSubpage(subpageLink)
         noOfPages += 1
 
@@ -57,13 +61,14 @@ def parseSubpage(link):
     totalWords.append(len(c_p.values()))
     words.append(' '.join([''.join(x.findAll(text=True)) for x in articleBody.findAll('p')]))
 
-page = requests.get("https://www.espn.com/")
+
+page = requests.get(espnUrl)
 soup = BeautifulSoup(page.content, "html.parser")
 menuLinks = soup.find_all('a', {'itemprop': 'url'})
 
 for link in menuLinks:
     if noOfPages < 20:
-        parseMainpage("https://www.espn.com" + link['href'])
+        parseMainpage(espnUrl + link['href'])
 
 print("Number of Articles: " + str(noOfPages))
 print("Mean Words: " + str(statistics.mean(totalWords)))
